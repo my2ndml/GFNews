@@ -20,3 +20,41 @@ exports.handler = async function(event, context) {
 
       // Creazione di un array con le notizie
       const allItems = items.map(item => {
+        const description = item.description[0];
+        const imageMatch = description.match(/<img[^>]+src="([^">]+)"/); // RegEx per cercare <img> e ottenere l'URL
+
+        const image = imageMatch ? imageMatch[1] : "https://via.placeholder.com/150"; // Usa immagine di default se non trovata
+
+        return {
+          title: item.title[0],
+          link: item.link[0],
+          description: item.description[0],
+          pubDate: item.pubDate[0],
+          image: image
+        };
+      });
+
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" // Permette il CORS
+        },
+        body: JSON.stringify(allItems),
+      };
+    } else {
+      console.error("Il feed non contiene 'channel' o 'item'. Struttura del feed:", result);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ message: "Feed RSS non valido", error: "Il feed non contiene il canale o gli articoli" }),
+      };
+    }
+
+  } catch (error) {
+    console.error("Errore durante il caricamento del feed:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Errore interno del server", error: error.message }),
+    };
+  }
+};
