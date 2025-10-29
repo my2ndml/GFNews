@@ -1,80 +1,97 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>News Wall</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GF News</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
       margin: 0;
       padding: 0;
+      background-color: #f9f9f9;
     }
-    h1 {
-      text-align: center;
-      padding: 20px;
-    }
-    .news {
+    #news-wall {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 20px;
+      padding: 20px;
     }
     .news-item {
-      width: 300px;
       background-color: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      margin: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin: 15px;
+      padding: 20px;
+      width: 300px;
+      transition: transform 0.3s;
+    }
+    .news-item:hover {
+      transform: scale(1.05);
     }
     .news-item img {
       width: 100%;
-      height: 200px;
-      object-fit: cover;
+      border-radius: 10px;
     }
-    .content {
-      padding: 15px;
-    }
-    .content h2 {
+    .news-item h3 {
+      margin: 15px 0;
       font-size: 18px;
-      margin: 0 0 10px;
     }
-    .content p {
+    .news-item p {
       font-size: 14px;
       color: #555;
+    }
+    .news-item small {
+      color: #999;
     }
   </style>
 </head>
 <body>
-  <h1>News Wall</h1>
-  <div class="news" id="news-wall">
-    <!-- Notizie verranno caricate qui -->
-  </div>
+  <h1 style="text-align: center; margin-top: 20px;">Ultime Notizie</h1>
+  <div id="news-wall"></div>
 
   <script>
     async function loadRSS() {
-      const response = await fetch('/.netlify/functions/get-rss');
+      const response = await fetch(".netlify/functions/get-rss");
       const data = await response.json();
-      const newsWall = document.getElementById('news-wall');
+
+      const newsWall = document.getElementById("news-wall");
+      newsWall.innerHTML = ""; // Clear previous content
 
       data.forEach(item => {
-        const newsItem = document.createElement('div');
-        newsItem.classList.add('news-item');
-        newsItem.innerHTML = `
-          <img src="${item.image || 'https://via.placeholder.com/300x200'}" alt="${item.title}" />
-          <div class="content">
-            <h2>${item.title}</h2>
-            <p>${item.content}</p>
-            <a href="${item.link}" target="_blank">Leggi di più</a>
-          </div>
-        `;
+        const newsItem = document.createElement("div");
+        newsItem.classList.add("news-item");
+
+        // Aggiungi immagine
+        const image = document.createElement("img");
+        image.src = item.image;
+        image.alt = item.title;
+
+        // Aggiungi il titolo
+        const title = document.createElement("h3");
+        title.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a>`;
+
+        // Aggiungi la descrizione
+        const description = document.createElement("p");
+        description.innerHTML = item.description;
+
+        // Aggiungi la data di pubblicazione
+        const pubDate = document.createElement("small");
+        pubDate.innerText = new Date(item.pubDate).toLocaleDateString();
+
+        // Aggiungi tutto al newsItem
+        newsItem.appendChild(image);
+        newsItem.appendChild(title);
+        newsItem.appendChild(description);
+        newsItem.appendChild(pubDate);
+
+        // Aggiungi il newsItem al newsWall
         newsWall.appendChild(newsItem);
       });
     }
 
-    loadRSS();
+    // Carica il feed RSS quando la pagina è pronta
+    window.onload = loadRSS;
   </script>
 </body>
 </html>
