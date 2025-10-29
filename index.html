@@ -87,26 +87,29 @@
 
                         // Crea i box delle notizie
                         data.forEach((item) => {
+                            console.log("Oggetto news item:", item); // Log per ogni notizia
+
                             const newsItem = document.createElement('div');
                             newsItem.classList.add('news-item');
 
-                            // Controlla che 'title' sia una stringa
+                            // Estrarre il titolo
                             const title = document.createElement('h2');
-                            title.textContent = item.title ? (typeof item.title === 'string' ? item.title : item.title[0]) : "No title available";
+                            title.textContent = item.title || "No title available"; // Controlla che il titolo esista
                             newsItem.appendChild(title);
 
-                            // Controlla che 'description' sia una stringa
+                            // Estrarre la descrizione (content)
                             const description = document.createElement('p');
-                            description.textContent = item.description || "No Description available";
+                            description.innerHTML = item.content || "No Description available"; // Usare innerHTML per contenuti HTML
                             newsItem.appendChild(description);
 
+                            // Aggiungere il link
                             const link = document.createElement('a');
                             link.href = item.link || "#";
                             link.target = "_blank";
                             link.textContent = "Leggi di più";
                             newsItem.appendChild(link);
 
-                            // Se esiste un'immagine, la aggiungiamo
+                            // Se esiste un'immagine, la aggiungiamo (ipotizzando che il feed contenga immagini nel contenuto)
                             if (item.image) {
                                 const img = document.createElement('img');
                                 img.src = item.image;
@@ -115,6 +118,11 @@
                                 img.style.height = "auto";
                                 newsItem.appendChild(img);
                             }
+
+                            // Aggiungere la data di pubblicazione
+                            const publishedDate = document.createElement('p');
+                            publishedDate.textContent = item.published ? new Date(item.published).toLocaleString() : "Data non disponibile";
+                            newsItem.appendChild(publishedDate);
 
                             newsWall.appendChild(newsItem);
                         });
