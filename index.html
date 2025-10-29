@@ -1,3 +1,53 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GF News</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .feed-box {
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feed-box img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
+
+        .date {
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<h1>GF News - RSS Feed</h1>
+<div id="feed-container">Caricamento in corso...</div> <!-- Aggiungi questo elemento per contenere i feed -->
+
 <script>
     // Funzione per caricare e visualizzare i feed RSS
     function loadRSS(data) {
@@ -46,8 +96,13 @@
     }
 
     // Funzione per ottenere i feed RSS dalla funzione Netlify
-    fetch("/.netlify/functions/get-rss")
-        .then(response => response.json())
-        .then(data => loadRSS(data))
-        .catch(error => console.log("Errore durante il caricamento del feed:", error));
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch("/.netlify/functions/get-rss")
+            .then(response => response.json())
+            .then(data => loadRSS(data))
+            .catch(error => console.log("Errore durante il caricamento del feed:", error));
+    });
 </script>
+
+</body>
+</html>
