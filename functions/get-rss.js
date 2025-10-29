@@ -1,50 +1,45 @@
 const axios = require('axios');
-const { parseStringPromise } = require('xml2js');
+const xml2js = require('xml2js'); // Libreria per il parsing del XML RSS
 
 exports.handler = async function(event, context) {
-  const feedUrl = "https://www.google.com/alerts/feeds/16536343738982417073/13194083261960971336"; // URL del feed RSS
+    try {
+        const feedUrl = 'https://www.google.com/alerts/feeds/16536343738982417073/13194083261960971336'; // URL del feed RSS
+        const response = await axios.get(feedUrl);
+        const xmlData = response.data;
 
-  try {
-    const response = await axios.get(feedUrl);
-    const xmlData = response.data;
+        // Usa xml2js per parsare l'XML in un oggetto JavaScript
+        const parser = new xml2js.Parser();
+        const parsedData = await parser.parseStringPromise(xmlData);
 
-    console.log("RSS Feed ricevuto:", xmlData); // Log del feed raw
+        // Mappa i dati RSS nel formato che il frontend si aspetta
+        const entries = parsedData.feed.entry || [];
 
-    // Parsing del feed RSS
-    const result = await parseStringPromise(xmlData);
-    console.log("RSS Feed parsato:", JSON.stringify(result, null, 2)); // Log del risultato del parsing
+        const newsItems = entries.map(entry => ({
+            title: entry.title[0] || "No title available",
+            link: entry.link[0].$.href || "#", // Estrai l'URL dal tag <link>
+            content: entry.content[0] || "No Description available", // Estrai il contenuto (descrizione)
+            published: entry.published[0], // La data di pubblicazione
+            image: extractImage(entry.content[0]) // Funzione per estrarre l'immagine, se presente
+        }));
 
-    // Verifica se esiste 'entry' nel feed (Atom Feed struttura)
-    if (result.feed && result.feed.entry) {
-      const items = result.feed.entry;
-
-      // Creazione di un array con le notizie
-      const allItems = items.map(item => {
-        const image = item['media:content'] ? item['media:content'][0].$.url : null; // Esso potrebbe essere nel campo media:content per le immagini
-
+        // Restituisci i dati in formato JSON
         return {
-          title: item.title[0],               // Titolo
-          description: item.summary ? item.summary[0] : "No Description available", // Descrizione
-          link: item.link[0].$.href,          // Link alla notizia
-          image: image                         // Immagine
+            statusCode: 200,
+            body: JSON.stringify(newsItems)
         };
-      });
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify(allItems)
-      };
-    } else {
-      return {
-        statusCode: 500,
-        body: "Feed non valido o vuoto"
-      };
+    } catch (error) {
+        console.error("Errore durante il recupero del feed RSS:", error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Errore durante il caricamento del feed." })
+        };
     }
-  } catch (error) {
-    console.error("Errore durante il caricamento del feed:", error);
-    return {
-      statusCode: 500,
-      body: `Errore nel caricamento del feed: ${error.message}`
-    };
-  }
 };
+
+// Funzione per estrarre un'immagine dal contenuto HTML (se presente)
+function extractImage(content) {
+    const imgRegex = /<img[^>]+src="([^">]+)"/; // Regex per trovare l'URL dell'immagine
+    const matches = content.match(imgRegex);
+    return matches ? matches[1] : null; // Ritorna l'URL dell'immagine se trovato, altrimenti null
+}
