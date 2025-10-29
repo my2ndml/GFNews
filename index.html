@@ -62,27 +62,32 @@
 
                 // Creazione della struttura HTML per ciascun feed
                 const title = document.createElement("h2");
-                title.textContent = item.title;
+                title.textContent = item.title || "No title available"; // Mostra titolo
 
                 const link = document.createElement("a");
-                link.href = item.link;
+                link.href = item.link || "#"; // Link al post, se disponibile
                 link.textContent = "Leggi di più";
                 link.target = "_blank"; // Per aprire il link in una nuova scheda
 
+                // Gestisci immagine, se presente
                 const image = document.createElement("img");
-                image.src = item.image;
-                image.alt = item.title; // Alt text per l'immagine
+                if (item.image) {
+                    image.src = item.image;
+                    image.alt = item.title || "No image"; // Alt text per l'immagine
+                }
 
+                // Descrizione (gestione di errori se assente)
                 const description = document.createElement("p");
-                description.textContent = item.description || "No Description available";  // Aggiunta fallback per la descrizione
+                description.textContent = item.description || "No Description available"; // Aggiungi fallback per la descrizione
 
+                // Data di pubblicazione
                 const pubDate = document.createElement("p");
                 pubDate.classList.add("date");
-                pubDate.textContent = new Date(item.pubDate).toLocaleString(); // Conversione della data in formato leggibile
+                pubDate.textContent = item.pubDate ? new Date(item.pubDate).toLocaleString() : "No date available";
 
                 // Appendi tutti gli elementi creati al box della notizia
                 box.appendChild(title);
-                box.appendChild(image);
+                if (image) box.appendChild(image); // Aggiungi immagine solo se esiste
                 box.appendChild(description);
                 box.appendChild(pubDate);
                 box.appendChild(link);
