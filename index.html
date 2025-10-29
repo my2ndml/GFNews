@@ -90,10 +90,12 @@
                             const newsItem = document.createElement('div');
                             newsItem.classList.add('news-item');
 
+                            // Controlla che 'title' sia una stringa
                             const title = document.createElement('h2');
-                            title.textContent = item.title || "No title available";
+                            title.textContent = item.title ? (typeof item.title === 'string' ? item.title : item.title[0]) : "No title available";
                             newsItem.appendChild(title);
 
+                            // Controlla che 'description' sia una stringa
                             const description = document.createElement('p');
                             description.textContent = item.description || "No Description available";
                             newsItem.appendChild(description);
