@@ -1,97 +1,132 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GF News</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f9f9f9;
-    }
-    #news-wall {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px;
-    }
-    .news-item {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      margin: 15px;
-      padding: 20px;
-      width: 300px;
-      transition: transform 0.3s;
-    }
-    .news-item:hover {
-      transform: scale(1.05);
-    }
-    .news-item img {
-      width: 100%;
-      border-radius: 10px;
-    }
-    .news-item h3 {
-      margin: 15px 0;
-      font-size: 18px;
-    }
-    .news-item p {
-      font-size: 14px;
-      color: #555;
-    }
-    .news-item small {
-      color: #999;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GFNews - News Wall</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 2.5em;
+            color: #333;
+        }
+
+        #feed-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px;
+        }
+
+        .feed-box {
+            background-color: white;
+            width: 250px;
+            margin: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .feed-box img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .feed-box h2 {
+            font-size: 1.2em;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .feed-box p {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .feed-box .date {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .feed-box a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .feed-box a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-  <h1 style="text-align: center; margin-top: 20px;">Ultime Notizie</h1>
-  <div id="news-wall"></div>
+    <h1>GFNews - Wall delle Notizie</h1>
+    <div id="feed-container"></div>
 
-  <script>
-    async function loadRSS() {
-      const response = await fetch(".netlify/functions/get-rss");
-      const data = await response.json();
+    <script>
+        // Funzione per caricare e visualizzare i feed RSS
+        function loadRSS(data) {
+            const container = document.getElementById("feed-container");
+            container.innerHTML = ''; // Resetta il contenitore per evitare duplicati
 
-      const newsWall = document.getElementById("news-wall");
-      newsWall.innerHTML = ""; // Clear previous content
+            // Controlla se i dati sono corretti
+            if (Array.isArray(data)) {
+                data.forEach(item => {
+                    const box = document.createElement("div");
+                    box.classList.add("feed-box");
 
-      data.forEach(item => {
-        const newsItem = document.createElement("div");
-        newsItem.classList.add("news-item");
+                    // Creazione della struttura HTML per ciascun feed
+                    const title = document.createElement("h2");
+                    title.textContent = item.title;
 
-        // Aggiungi immagine
-        const image = document.createElement("img");
-        image.src = item.image;
-        image.alt = item.title;
+                    const link = document.createElement("a");
+                    link.href = item.link;
+                    link.textContent = "Leggi di più";
+                    link.target = "_blank"; // Per aprire il link in una nuova scheda
 
-        // Aggiungi il titolo
-        const title = document.createElement("h3");
-        title.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a>`;
+                    const image = document.createElement("img");
+                    image.src = item.image;
+                    image.alt = item.title; // Alt text per l'immagine
 
-        // Aggiungi la descrizione
-        const description = document.createElement("p");
-        description.innerHTML = item.description;
+                    const description = document.createElement("p");
+                    description.textContent = item.description;
 
-        // Aggiungi la data di pubblicazione
-        const pubDate = document.createElement("small");
-        pubDate.innerText = new Date(item.pubDate).toLocaleDateString();
+                    const pubDate = document.createElement("p");
+                    pubDate.classList.add("date");
+                    pubDate.textContent = item.pubDate;
 
-        // Aggiungi tutto al newsItem
-        newsItem.appendChild(image);
-        newsItem.appendChild(title);
-        newsItem.appendChild(description);
-        newsItem.appendChild(pubDate);
+                    // Appendi tutti gli elementi creati al box della notizia
+                    box.appendChild(title);
+                    box.appendChild(image);
+                    box.appendChild(description);
+                    box.appendChild(pubDate);
+                    box.appendChild(link);
 
-        // Aggiungi il newsItem al newsWall
-        newsWall.appendChild(newsItem);
-      });
-    }
+                    // Aggiungi il box al contenitore
+                    container.appendChild(box);
+                });
+            } else {
+                console.error("Dati non validi ricevuti:", data);
+            }
+        }
 
-    // Carica il feed RSS quando la pagina è pronta
-    window.onload = loadRSS;
-  </script>
+        // Funzione per ottenere i feed RSS dalla funzione Netlify
+        fetch("/.netlify/functions/get-rss")
+            .then(response => response.json())
+            .then(data => loadRSS(data))
+            .catch(error => console.log("Errore durante il caricamento del feed:", error));
+    </script>
 </body>
 </html>
