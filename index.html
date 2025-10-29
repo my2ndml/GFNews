@@ -78,10 +78,7 @@
         // Funzione per caricare i feed
         function loadRSS() {
             fetch("/.netlify/functions/get-rss")
-                .then((response) => {
-                    console.log("Risposta del server:", response); // Log della risposta
-                    return response.json();
-                })
+                .then((response) => response.json())
                 .then((data) => {
                     console.log("Dati ricevuti:", data); // Log dei dati ricevuti
                     if (Array.isArray(data) && data.length > 0) {
