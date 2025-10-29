@@ -54,40 +54,40 @@
         const container = document.getElementById("feed-container");
         container.innerHTML = ''; // Resetta il contenitore per evitare duplicati
 
-        // Controlla se i dati sono corretti
-        if (Array.isArray(data)) {
-            data.forEach(item => {
+        // Verifica se 'entry' è presente e contiene articoli
+        if (data && data.feed && Array.isArray(data.feed.entry)) {
+            data.feed.entry.forEach(item => {
                 const box = document.createElement("div");
                 box.classList.add("feed-box");
 
-                // Creazione della struttura HTML per ciascun feed
+                // Estrai il titolo e il link
                 const title = document.createElement("h2");
-                title.textContent = item.title || "No title available"; // Mostra titolo
+                title.textContent = item.title[0] || "No title available"; // Se il titolo non c'è, metti un fallback
 
                 const link = document.createElement("a");
-                link.href = item.link || "#"; // Link al post, se disponibile
+                link.href = item.link[0]["$"].href || "#"; // Link al post
                 link.textContent = "Leggi di più";
                 link.target = "_blank"; // Per aprire il link in una nuova scheda
 
-                // Gestisci immagine, se presente
+                // Gestisci immagine, se presente (non c'è nel feed Atom di Google Alerts, quindi non si aggiungerà)
                 const image = document.createElement("img");
-                if (item.image) {
-                    image.src = item.image;
-                    image.alt = item.title || "No image"; // Alt text per l'immagine
+                const imageUrl = item["media:content"] ? item["media:content"][0]["$"].url : null;
+                if (imageUrl) {
+                    image.src = imageUrl;
+                    image.alt = item.title[0] || "No image"; // Alt text per l'immagine
                 }
 
                 // Descrizione (gestione di errori se assente)
                 const description = document.createElement("p");
-                description.textContent = item.description || "No Description available"; // Aggiungi fallback per la descrizione
+                description.textContent = item.summary[0] || "No Description available"; // Descrizione, se presente
 
                 // Data di pubblicazione
                 const pubDate = document.createElement("p");
                 pubDate.classList.add("date");
-                pubDate.textContent = item.pubDate ? new Date(item.pubDate).toLocaleString() : "No date available";
+                pubDate.textContent = item.updated[0] ? new Date(item.updated[0]).toLocaleString() : "No date available";
 
                 // Appendi tutti gli elementi creati al box della notizia
                 box.appendChild(title);
-                if (image) box.appendChild(image); // Aggiungi immagine solo se esiste
                 box.appendChild(description);
                 box.appendChild(pubDate);
                 box.appendChild(link);
@@ -110,4 +110,3 @@
 </script>
 
 </body>
-</html>
