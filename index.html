@@ -1,101 +1,139 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GF News</title>
+    <title>GFNews - Wall delle Notizie</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-        }
-
-        .feed-box {
-            border: 1px solid #ddd;
-            margin: 10px;
-            padding: 15px;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        .feed-box img {
-            max-width: 100%;
-            height: auto;
+        #news-wall {
+            width: 80%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .news-item {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .news-item h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .news-item p {
+            font-size: 16px;
+            color: #666;
             margin: 10px 0;
         }
 
-        .date {
-            font-size: 0.9em;
-            color: #888;
-        }
-
-        h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-
-        a {
-            color: #007bff;
+        .news-item a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
             text-decoration: none;
+            border-radius: 5px;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .news-item a:hover {
+            background-color: #0056b3;
+        }
+
+        .loading {
+            font-size: 18px;
+            color: #666;
         }
     </style>
 </head>
+
 <body>
 
-<h1>GF News - RSS Feed</h1>
-<div id="feed-container">Caricamento in corso...</div> <!-- Aggiungi questo elemento per contenere i feed -->
+    <h1 style="text-align: center;">GFNews - Wall delle Notizie</h1>
 
-<script>
-    // Funzione per caricare e visualizzare i feed RSS
-  function loadRSS() {
-  fetch("/.netlify/functions/get-rss")
-    .then((response) => response.json())
-    .then((data) => {
-      // Verifica se i dati sono un array e che non siano vuoti
-      if (Array.isArray(data) && data.length > 0) {
-        console.log("Dati ricevuti:", data); // Controlla i dati ricevuti
-        const newsWall = document.getElementById('news-wall');
-        newsWall.innerHTML = ''; // Pulisce il contenitore dei feed
+    <div id="news-wall">
+        <p class="loading">Caricamento in corso...</p>
+    </div>
 
-        // Crea i box delle notizie
-        data.forEach((item) => {
-          const newsItem = document.createElement('div');
-          newsItem.classList.add('news-item');
+    <script>
+        // Funzione per caricare i feed
+        function loadRSS() {
+            fetch("/.netlify/functions/get-rss")
+                .then((response) => {
+                    console.log("Risposta del server:", response); // Log della risposta
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log("Dati ricevuti:", data); // Log dei dati ricevuti
+                    if (Array.isArray(data) && data.length > 0) {
+                        const newsWall = document.getElementById('news-wall');
+                        newsWall.innerHTML = ''; // Pulisce il contenitore dei feed
 
-          // Crea il titolo
-          const title = document.createElement('h2');
-          title.textContent = item.title || "No title available";
-          newsItem.appendChild(title);
+                        // Crea i box delle notizie
+                        data.forEach((item) => {
+                            const newsItem = document.createElement('div');
+                            newsItem.classList.add('news-item');
 
-          // Crea la descrizione
-          const description = document.createElement('p');
-          description.textContent = item.description || "No Description available";
-          newsItem.appendChild(description);
+                            const title = document.createElement('h2');
+                            title.textContent = item.title || "No title available";
+                            newsItem.appendChild(title);
 
-          // Crea il link
-          const link = document.createElement('a');
-          link.href = item.link || "#";
-          link.target = "_blank";
-          link.textContent = "Leggi di più";
-          newsItem.appendChild(link);
+                            const description = document.createElement('p');
+                            description.textContent = item.description || "No Description available";
+                            newsItem.appendChild(description);
 
-          // Aggiungi l'elemento al wall delle notizie
-          newsWall.appendChild(newsItem);
-        });
-      } else {
-        console.log("Dati non validi ricevuti:", data);
-        // Mostra un messaggio di errore o di "Nessuna notizia disponibile"
-        document.getElementById('news-wall').innerHTML = "Nessuna notizia disponibile.";
-      }
-    })
-    .catch((error) => {
-      console.error("Errore durante il caricamento del feed:", error);
-      document.getElementById('news-wall').innerHTML = "Errore nel caricamento delle notizie.";
-    });
-}
+                            const link = document.createElement('a');
+                            link.href = item.link || "#";
+                            link.target = "_blank";
+                            link.textContent = "Leggi di più";
+                            newsItem.appendChild(link);
 
+                            // Se esiste un'immagine, la aggiungiamo
+                            if (item.image) {
+                                const img = document.createElement('img');
+                                img.src = item.image;
+                                img.alt = item.title || "Image";
+                                img.style.width = "100%";
+                                img.style.height = "auto";
+                                newsItem.appendChild(img);
+                            }
+
+                            newsWall.appendChild(newsItem);
+                        });
+                    } else {
+                        console.log("Dati non validi ricevuti:", data);
+                        document.getElementById('news-wall').innerHTML = "Nessuna notizia disponibile.";
+                    }
+                })
+                .catch((error) => {
+                    console.error("Errore durante il caricamento del feed:", error);
+                    document.getElementById('news-wall').innerHTML = "Errore nel caricamento delle notizie.";
+                });
+        }
+
+        // Carica i feed quando la pagina è pronta
+        window.onload = loadRSS;
+    </script>
 
 </body>
+
+</html>
