@@ -50,63 +50,52 @@
 
 <script>
     // Funzione per caricare e visualizzare i feed RSS
-    function loadRSS(data) {
-        const container = document.getElementById("feed-container");
-        container.innerHTML = ''; // Resetta il contenitore per evitare duplicati
+  function loadRSS() {
+  fetch("/.netlify/functions/get-rss")
+    .then((response) => response.json())
+    .then((data) => {
+      // Verifica se i dati sono un array e che non siano vuoti
+      if (Array.isArray(data) && data.length > 0) {
+        console.log("Dati ricevuti:", data); // Controlla i dati ricevuti
+        const newsWall = document.getElementById('news-wall');
+        newsWall.innerHTML = ''; // Pulisce il contenitore dei feed
 
-        // Verifica se 'entry' è presente e contiene articoli
-        if (data && data.feed && Array.isArray(data.feed.entry)) {
-            data.feed.entry.forEach(item => {
-                const box = document.createElement("div");
-                box.classList.add("feed-box");
+        // Crea i box delle notizie
+        data.forEach((item) => {
+          const newsItem = document.createElement('div');
+          newsItem.classList.add('news-item');
 
-                // Estrai il titolo e il link
-                const title = document.createElement("h2");
-                title.textContent = item.title[0] || "No title available"; // Se il titolo non c'è, metti un fallback
+          // Crea il titolo
+          const title = document.createElement('h2');
+          title.textContent = item.title || "No title available";
+          newsItem.appendChild(title);
 
-                const link = document.createElement("a");
-                link.href = item.link[0]["$"].href || "#"; // Link al post
-                link.textContent = "Leggi di più";
-                link.target = "_blank"; // Per aprire il link in una nuova scheda
+          // Crea la descrizione
+          const description = document.createElement('p');
+          description.textContent = item.description || "No Description available";
+          newsItem.appendChild(description);
 
-                // Gestisci immagine, se presente (non c'è nel feed Atom di Google Alerts, quindi non si aggiungerà)
-                const image = document.createElement("img");
-                const imageUrl = item["media:content"] ? item["media:content"][0]["$"].url : null;
-                if (imageUrl) {
-                    image.src = imageUrl;
-                    image.alt = item.title[0] || "No image"; // Alt text per l'immagine
-                }
+          // Crea il link
+          const link = document.createElement('a');
+          link.href = item.link || "#";
+          link.target = "_blank";
+          link.textContent = "Leggi di più";
+          newsItem.appendChild(link);
 
-                // Descrizione (gestione di errori se assente)
-                const description = document.createElement("p");
-                description.textContent = item.summary[0] || "No Description available"; // Descrizione, se presente
-
-                // Data di pubblicazione
-                const pubDate = document.createElement("p");
-                pubDate.classList.add("date");
-                pubDate.textContent = item.updated[0] ? new Date(item.updated[0]).toLocaleString() : "No date available";
-
-                // Appendi tutti gli elementi creati al box della notizia
-                box.appendChild(title);
-                box.appendChild(description);
-                box.appendChild(pubDate);
-                box.appendChild(link);
-
-                // Aggiungi il box al contenitore
-                container.appendChild(box);
-            });
-        } else {
-            console.error("Dati non validi ricevuti:", data);
-        }
-    }
-
-    // Funzione per ottenere i feed RSS dalla funzione Netlify
-    document.addEventListener("DOMContentLoaded", function() {
-        fetch("/.netlify/functions/get-rss")
-            .then(response => response.json())
-            .then(data => loadRSS(data))
-            .catch(error => console.log("Errore durante il caricamento del feed:", error));
+          // Aggiungi l'elemento al wall delle notizie
+          newsWall.appendChild(newsItem);
+        });
+      } else {
+        console.log("Dati non validi ricevuti:", data);
+        // Mostra un messaggio di errore o di "Nessuna notizia disponibile"
+        document.getElementById('news-wall').innerHTML = "Nessuna notizia disponibile.";
+      }
+    })
+    .catch((error) => {
+      console.error("Errore durante il caricamento del feed:", error);
+      document.getElementById('news-wall').innerHTML = "Errore nel caricamento delle notizie.";
     });
-</script>
+}
+
 
 </body>
