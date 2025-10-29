@@ -1,6 +1,7 @@
 const axios = require("axios");
 const { parseStringPromise } = require("xml2js");
 
+// URL del feed RSS
 const RSS_FEEDS = [
   "https://www.google.com/alerts/feeds/16536343738982417073/13194083261960971336"
 ];
@@ -8,8 +9,7 @@ const RSS_FEEDS = [
 async function fetchFeed(url) {
   const res = await axios.get(url, { timeout: 10000, responseType: "text" });
   const xml = res.data;
-  const parsed = await parseStringPromise(xml, { explicitArray: false, mergeAttrs: true });
-  return parsed;
+  return await parseStringPromise(xml, { explicitArray: false, mergeAttrs: true });
 }
 
 function extractItemsFromParsed(parsed) {
